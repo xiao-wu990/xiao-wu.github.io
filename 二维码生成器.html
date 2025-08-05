@@ -1,0 +1,977 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>灵动码生成器 Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #6c5ce7;
+            --secondary-color: #a29bfe;
+            --accent-color: #00cec9;
+            --light-color: #f8f9fa;
+            --dark-color: #2d3436;
+            --success-color: #00b894;
+            --warning-color: #fdcb6e;
+            --danger-color: #d63031;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --card-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #dfe6e9 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            color: var(--dark-color);
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            opacity: 1;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInUp 0.8s ease;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+            text-shadow: 0 2px 10px rgba(108, 92, 231, 0.2);
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--dark-color);
+            opacity: 0.8;
+            font-weight: 300;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            transform: translateY(0);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .form-group {
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+            color: var(--dark-color);
+            font-size: 1.05rem;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.2);
+            background: white;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn.loading::after {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            margin: auto;
+            border: 4px solid transparent;
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: button-loading-spinner 1s ease infinite;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #636e72, #2d3436);
+            box-shadow: 0 5px 15px rgba(45, 52, 54, 0.2);
+        }
+        
+        .btn-accent {
+            background: linear-gradient(135deg, var(--accent-color), #55efc4);
+            box-shadow: 0 5px 15px rgba(0, 206, 201, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color), #55efc4);
+            box-shadow: 0 5px 15px rgba(0, 184, 148, 0.3);
+        }
+        
+        .result-container {
+            margin-top: 2.5rem;
+            text-align: center;
+            animation: fadeIn 0.6s ease;
+            display: none;
+        }
+        
+        .result-title {
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark-color);
+            font-weight: 600;
+        }
+        
+        .code-display {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            display: inline-block;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .code-display:hover {
+            transform: scale(1.03);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+        }
+        
+        #qrcode, #barcode {
+            margin: 0 auto;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1.2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(0,0,0,0.05);
+        }
+        
+        .tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--dark-color);
+            opacity: 0.7;
+            transition: all 0.3s ease;
+            position: relative;
+            font-size: 1.1rem;
+        }
+        
+        .tab:hover {
+            opacity: 1;
+            color: var(--primary-color);
+        }
+        
+        .tab.active {
+            opacity: 1;
+            color: var(--primary-color);
+        }
+        
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--primary-color);
+            border-radius: 4px 4px 0 0;
+            animation: tabUnderline 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeInUp 0.5s ease;
+        }
+        
+        .settings-group {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        
+        .setting {
+            flex: 1;
+            min-width: 220px;
+        }
+        
+        /* 电子名片样式 - 终极优化版 */
+        .business-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin: 2rem auto;
+            max-width: 800px;
+            display: none;
+            border: 1px solid #e0e0e0;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+        }
+        
+        .business-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .business-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+        }
+        
+        .business-card-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        /* 分裂排版样式 */
+        .business-card.split-layout .business-card-content {
+            flex-direction: row;
+            align-items: flex-start;
+        }
+        
+        .business-card.split-layout .business-card-left {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .business-card.split-layout .business-card-image {
+            width: 100%;
+            height: 200px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .business-card.split-layout .business-card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .business-card.split-layout .business-card-code {
+            width: 100%;
+            text-align: center;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #eee;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .business-card.split-layout .business-card-right {
+            flex: 2;
+            min-width: 300px;
+            padding: 1rem;
+        }
+        
+        /* 全屏布局样式 */
+        .business-card.full-layout {
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .business-card.full-layout .business-card-content {
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .business-card.full-layout .business-card-image {
+            width: 100%;
+            height: 250px;
+            overflow: hidden;
+        }
+        
+        .business-card.full-layout .business-card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .business-card.full-layout .business-card-details {
+            padding: 2rem;
+            background: white;
+            position: relative;
+        }
+        
+        .business-card.full-layout .business-card-code {
+            width: 100%;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            background: white;
+        }
+        
+        .business-card-name {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            position: relative;
+            display: inline-block;
+            font-weight: 700;
+        }
+        
+        .business-card-title {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+        
+        .business-card-info {
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+            color: #555;
+            font-size: 1.1rem;
+            white-space: pre-line;
+        }
+        
+        .business-card-contact {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: #555;
+            font-size: 1rem;
+        }
+        
+        .contact-item i {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            min-width: 20px;
+        }
+        
+        /* 布局选项样式 */
+        .layout-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .layout-option {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            background: white;
+        }
+        
+        .layout-option:hover {
+            border-color: var(--secondary-color);
+            transform: translateY(-3px);
+        }
+        
+        .layout-option.selected {
+            border-color: var(--primary-color);
+            background: rgba(108, 92, 231, 0.05);
+            box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.2);
+        }
+        
+        .layout-option i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        /* 图片提示样式 */
+        .image-tip {
+            font-size: 0.9rem;
+            color: var(--primary-color);
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .image-tip i {
+            font-size: 1rem;
+        }
+        
+        /* 联系按钮样式 */
+        .contact-buttons {
+            display: flex;
+            gap: 1.2rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .contact-btn {
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            text-decoration: none;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .contact-btn.qq {
+            background: linear-gradient(135deg, #12B7F5, #0084FF);
+        }
+        
+        .contact-btn.email {
+            background: linear-gradient(135deg, #EA4335, #D14836);
+        }
+        
+        .contact-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes button-loading-spinner {
+            from {
+                transform: rotate(0turn);
+            }
+            to {
+                transform: rotate(1turn);
+            }
+        }
+        
+        @keyframes tabUnderline {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .card {
+                padding: 2rem;
+            }
+            
+            .business-card-content {
+                flex-direction: column;
+            }
+            
+            .business-card.split-layout .business-card-left,
+            .business-card.split-layout .business-card-right {
+                width: 100%;
+                min-width: 100%;
+            }
+            
+            .layout-options {
+                flex-direction: column;
+            }
+            
+            .contact-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .contact-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 主界面容器 -->
+    <div class="container" id="mainContainer">
+        <header>
+            <h1><i class="fas fa-magic"></i> 灵动码生成器 Pro</h1>
+            <p class="subtitle">专业级二维码与条形码生成解决方案</p>
+        </header>
+        
+        <div class="card">
+            <div class="tabs">
+                <div class="tab active" data-tab="qrcode"><i class="fas fa-qrcode"></i> 二维码</div>
+                <div class="tab" data-tab="barcode"><i class="fas fa-barcode"></i> 条形码</div>
+                <div class="tab" data-tab="business-card"><i class="fas fa-id-card"></i> 电子名片</div>
+            </div>
+            
+            <div class="tab-content active" id="qrcode-tab">
+                <div class="form-group">
+                    <label for="qr-content"><i class="fas fa-pen"></i> 二维码内容</label>
+                    <textarea id="qr-content" placeholder="输入文本、URL或其他内容...">https://example.com</textarea>
+                </div>
+                
+                <div class="settings-group">
+                    <div class="setting">
+                        <label for="qr-size"><i class="fas fa-expand"></i> 尺寸</label>
+                        <select id="qr-size">
+                            <option value="100">100x100</option>
+                            <option value="150">150x150</option>
+                            <option value="200" selected>200x200</option>
+                            <option value="250">250x250</option>
+                            <option value="300">300x300</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting">
+                        <label for="qr-color"><i class="fas fa-palette"></i> 颜色</label>
+                        <input type="color" id="qr-color" value="#6c5ce7">
+                    </div>
+                    
+                    <div class="setting">
+                        <label for="qr-bg"><i class="fas fa-fill"></i> 背景色</label>
+                        <input type="color" id="qr-bg" value="#ffffff">
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <div class="setting">
+                        <label for="qr-error-level"><i class="fas fa-shield-alt"></i> 纠错级别</label>
+                        <select id="qr-error-level">
+                            <option value="L">低 (7%)</option>
+                            <option value="M" selected>中 (15%)</option>
+                            <option value="Q">高 (25%)</option>
+                            <option value="H">最高 (30%)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting">
+                        <label for="qr-margin"><i class="fas fa-border-all"></i> 边距</label>
+                        <select id="qr-margin">
+                            <option value="0">无</option>
+                            <option value="1" selected>小</option>
+                            <option value="2">中</option>
+                            <option value="3">大</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting">
+                        <label for="qr-logo"><i class="fas fa-image"></i> LOGO嵌入</label>
+                        <input type="file" id="qr-logo" accept="image/*">
+                    </div>
+                </div>
+                
+                <button id="generate-qr" class="btn"><i class="fas fa-magic"></i> 生成二维码</button>
+                
+                <div class="result-container" id="qr-result">
+                    <h3 class="result-title">您的二维码</h3>
+                    <div class="code-display">
+                        <div id="qrcode"></div>
+                    </div>
+                    <div class="action-buttons">
+                        <button id="download-qr" class="btn btn-accent"><i class="fas fa-download"></i> 下载PNG</button>
+                        <button id="print-qr" class="btn btn-success"><i class="fas fa-print"></i> 打印</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="barcode-tab">
+                <div class="form-group">
+                    <label for="barcode-content"><i class="fas fa-pen"></i> 条形码内容</label>
+                    <input type="text" id="barcode-content" placeholder="输入数字或文本..." value="灵动码生成器Pro">
+                </div>
+                
+                <div class="settings-group">
+                    <div class="setting">
+                        <label for="barcode-type"><i class="fas fa-barcode"></i> 条形码类型</label>
+                        <select id="barcode-type">
+                            <option value="CODE128">CODE128 (支持文字)</option>
+                            <option value="CODE39">CODE39 (支持文字)</option>
+                            <option value="QR" selected>QR条形码 (支持文字/最佳兼容)</option>
+                            <option value="EAN13">EAN-13 (仅数字)</option>
+                            <option value="UPC">UPC (仅数字)</option>
+                            <option value="ITF14">ITF-14 (仅数字)</option>
+                            <option value="MSI">MSI (仅数字)</option>
+                            <option value="pharmacode">Pharmacode (仅数字)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting">
+                        <label for="barcode-width"><i class="fas fa-arrows-alt-h"></i> 宽度</label>
+                        <select id="barcode-width">
+                            <option value="1">细</option>
+                            <option value="2" selected>正常</option>
+                            <option value="3">粗</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting">
+                        <label for="barcode-height"><i class="fas fa-arrows-alt-v"></i> 高度</label>
+                        <select id="barcode-height">
+                            <option value="50">50px</option>
+                            <option value="100" selected>100px</option>
+                            <option value="150">150px</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <div class="setting">
+                        <label for="barcode-color"><i class="fas fa-palette"></i> 颜色</label>
+                        <input type="color" id="barcode-color" value="#2d3436">
+                    </div>
+                    
+                    <div class="setting">
+                        <label for="barcode-bg"><i class="fas fa-fill"></i> 背景色</label>
+                        <input type="color" id="barcode-bg" value="#ffffff">
+                    </div>
+                    
+                    <div class="setting">
+                        <label for="barcode-display-value"><i class="fas fa-font"></i> 显示文本</label>
+                        <select id="barcode-display-value">
+                            <option value="true" selected>是</option>
+                            <option value="false">否</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button id="generate-barcode" class="btn"><i class="fas fa-barcode"></i> 生成条形码</button>
+                
+                <div class="result-container" id="barcode-result">
+                    <h3 class="result-title">您的条形码</h3>
+                    <div class="code-display">
+                        <div id="barcode"></div>
+                    </div>
+                    <div class="action-buttons">
+                        <button id="download-barcode" class="btn btn-accent"><i class="fas fa-download"></i> 下载PNG</button>
+                        <button id="print-barcode-btn" class="btn btn-success"><i class="fas fa-print"></i> 打印</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="business-card-tab">
+                <div class="form-group">
+                    <label for="card-image"><i class="fas fa-image"></i> 选择图片</label>
+                    <input type="file" id="card-image" accept="image/*">
+                    <div class="image-tip">
+                        <i class="fas fa-lightbulb"></i> 建议使用横向图片(宽大于高)效果更佳
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="card-name"><i class="fas fa-user"></i> 姓名/公司名称</label>
+                    <input type="text" id="card-name" placeholder="输入姓名或公司名称" value="张三">
+                </div>
+                
+                <div class="form-group">
+                    <label for="card-title"><i class="fas fa-briefcase"></i> 职位/头衔</label>
+                    <input type="text" id="card-title" placeholder="输入职位或头衔" value="高级前端开发工程师">
+                </div>
+                
+                <div class="form-group">
+                    <label for="card-info"><i class="fas fa-info-circle"></i> 详细信息</label>
+                    <textarea id="card-info" placeholder="输入联系方式、地址等信息...">电话: 138-8888-8888
+邮箱: zhangsan@example.com
+地址: 北京市朝阳区科技园A座1001室</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-qrcode"></i> 选择编码类型</label>
+                    <div class="settings-group">
+                        <div class="setting">
+                            <input type="radio" id="card-type-qr" name="card-type" value="qr" checked>
+                            <label for="card-type-qr">二维码</label>
+                        </div>
+                        <div class="setting">
+                            <input type="radio" id="card-type-barcode" name="card-type" value="barcode">
+                            <label for="card-type-barcode">条形码</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="card-content-group">
+                    <label for="card-content"><i class="fas fa-pen"></i> 编码内容</label>
+                    <textarea id="card-content" placeholder="输入要编码的内容...">姓名: 张三
+职位: 高级前端开发工程师
+电话: 138-8888-8888
+邮箱: zhangsan@example.com</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-object-group"></i> 选择名片布局</label>
+                    <div class="layout-options">
+                        <div class="layout-option selected" data-layout="split">
+                            <i class="fas fa-columns"></i>
+                            <div>分裂排版</div>
+                            <small>图片和码在左，信息在右</small>
+                        </div>
+                        <div class="layout-option" data-layout="full">
+                            <i class="fas fa-expand"></i>
+                            <div>铺满全屏</div>
+                            <small>图片铺满，信息和码在下</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="generate-card" class="btn btn-success"><i class="fas fa-id-card"></i> 制作电子名片</button>
+                
+                <div class="business-card split-layout" id="business-card-result">
+                    <div class="business-card-content">
+                        <div class="business-card-left">
+                            <div class="business-card-image">
+                                <img id="card-result-image" src="" alt="电子名片图片">
+                            </div>
+                            <div class="business-card-code" id="card-result-code"></div>
+                        </div>
+                        <div class="business-card-right">
+                            <h3 class="business-card-name" id="card-result-name"></h3>
+                            <p class="business-card-title" id="card-result-title"></p>
+                            <div class="business-card-info" id="card-result-info"></div>
+                            <div class="business-card-contact">
+                                <div class="contact-item">
+                                    <i class="fas fa-phone"></i>
+                                    <span id="card-result-phone"></span>
+                                </div>
+                                <div class="contact-item">
+                                    <i class="fas fa-envelope"></i>
+                                    <span id="card-result-email"></span>
+                                </div>
+                                <div class="contact-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span id="card-result-address"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button id="download-card" class="btn btn-accent"><i class="fas fa-download"></i> 下载名片</button>
+                        <button id="print-card" class="btn btn-success"><i class="fas fa-print"></i> 打印名片</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="contact-buttons">
+            <a href="https://qm.qq.com/q/lvlvCfjcA2" target="_blank" class="contact-btn qq">
+                <i class="fab fa-qq"></i> 加入QQ群
+            </a>
+            <a href="mailto:example@example.com?subject=灵动码生成器Pro反馈" class="contact-btn email">
+                <i class="fas fa-envelope"></i> 联系开发者
+            </a>
+        </div>
+        
+        <footer>
+            <p>© 2025 灵动码生成器 Pro | 匠心打造</p>
+        </footer>
+    </div>
+
+    <script>
+        // 全局状态
+        let generatedData = {
+            qrCodes: [],
+            barcodes: [],
+            businessCards: []
+        };
+        
+        // DOM加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化标签页切换
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+                });
+            });
+            
+            // 初始化二维码生成
+            document.getElementById('generate-qr').addEventListener('click', generateQRCode);
+            
+            // 初始化条形码生成
+            document.getElementById('generate-barcode').addEventListener('click', generateBarcode);
+            
+            // 初始化电子名片生成
+            document.getElementById('generate-card').addEventListener('click', generateBusinessCard);
+            
+            // 初始化下载按钮
+            document.getElementById('download-qr').addEventListener('click', downloadQRCode);
+            document.getElementById('download-barcode').addEventListener('click', downloadBarcode);
+            document.getElementById('download-card').addEventListener('click', downloadBusinessCard);
+            
+            // 初始化打印按钮
+            document.getElementById('print-qr').addEventListener('click', printQRCode);
+            document.getElementById('print-barcode-btn').addEventListener('click', printBarcode);
+            document.getElementById('print-card').addEventListener('click', printBusinessCard);
+            
+            // 编码类型切换
+            document.querySelectorAll('input[name="card-type"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    document.getElementById('card-content').placeholder = 
+                        this.value === 'qr' ? '输入要编码的内容...' : '输入数字或文本...';
+                });
+            });
+            
+            // 布局选择
+            document.querySelectorAll('.layout-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.layout-option').forEach(opt => 
+                        opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+            
+            // 生成二维码
+            function generateQRCode() {
+                const btn = document.getElementById('generate-qr');
+                const originalText = btn.innerHTML;
+                
+                btn.innerHTML = '<i class="fas fa-magic"></i> 生成中...';
+                btn.classList.add('loading');
+                
+                const content = document.getElementById('qr-content').value.trim();
+                if (!content) {
+                    alert('请输入二维码内容');
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('loading');
+                    return;
+                }
+                
+                const size = parseInt(document.getElementById('qr-size').value);
+                const color = document.getElementById('qr-color').value;
+                const bgColor = document.getElementById('qr-bg').value;
+                const errorLevel = document.getElementById('qr-error-level').value;
+                const margin = parseInt(document.getElementById('qr-margin').value);
+                const logoFile = document.getElementById('qr-logo').files[0];
+                
+                const qrcodeElement = document.getElementById('qrcode');
+                qrcodeElement.innerHTML = '';
+                
+                const canvas = document.createElement('canvas');
+                qrcodeElement.appendChild(canvas);
+                
+                // 生成二维码
+                QRCode.toCanvas(canvas, content, {
+                    width: size
